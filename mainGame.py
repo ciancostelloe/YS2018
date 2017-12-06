@@ -5,6 +5,8 @@ import time
 import random
 import threading
 
+score = 0;
+
 print('Initialising connection\n');
 
 arduinoSerialData = serial.Serial(
@@ -34,7 +36,7 @@ def trafficLight():
     
     arduinoSerialData.write('SET_BRIGHTNESS:255\r'.encode())
     arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
-    time.sleep(1.1)
+    time.sleep(1.2)
     arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
     time.sleep(0.5)
 
@@ -48,7 +50,7 @@ def trafficLight():
     arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
     time.sleep(0.8)
     arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
-    time.sleep(0.5)
+    time.sleep(0.1)
 
 #trafficLight()
 
@@ -91,20 +93,73 @@ def redNumGen2():
 ###############################30 second timer###################################
 
 def timer30():
-    for x in range (30, 0, -1):
+    global timer
+    for timer in range (30, 0, -1):
         time.sleep(1)
-        print(x)
-                
-timer30()
+        #print(timer)
+        if timer == 1:
+            time.sleep(1)
+            print("Game Over")
+#timer30()
 
 
+################################Switches#########################################
+
+def switches():
+    for i in range (0,8):
+        arduinoSerialData.write('READ_SW\r'.encode())
+        switchState = arduinoSerialData.readline();
+        time.sleep(0.1)
+
+        if len(switchState) > 4:
+            global array
+            array = list(str(switchState))
+            global switchValues
+            switchValues = []
+            for x, val in enumerate(array):
+                if array[x] == 'T':
+                    #print('Switch', (x - 5), 'is Low')
+                    switchValues.append(array[x])
+                elif array[x] == 'F':
+                    #print('Switch ', (x - 5), 'is High')
+                    switchValues.append(array[x])
+            print(switchValues, "\n")
+        else:
+            print("No array: ", switchState)
+
+##            if switchValues[greenSec] == 'F':
+##                global score
+##                score = score + 1
+##                mainGame()
+##            elif switchValues[redSec1] == 'F':
+##                score = score - 1
+##                mainGame()
+##            elif switchValues[redSec2] == 'F':
+##                score = score - 1
+##                mainGame()            
+
+#switches()
+
+##################################Game#########################################    
 
 
+def mainGame():
 
+    greenNumGen()
+    redNumGen1()
+    redNumGen2()
 
+    arduinoSerialData.write('SET_BRIGHTNESS:255\r'.encode())
+    arduinoSerialData.write('SET_COLOUR:%d:0x0f0\r'.encode() %greenSec)
+    arduinoSerialData.write('SET_COLOUR:%d:0xf00\r'.encode() %redSec1)
+    arduinoSerialData.write('SET_COLOUR:%d:0xf00\r'.encode() %redSec2)
 
+    switches()
 
+    time.sleep(2)
+    arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
 
+mainGame()
 
 
 

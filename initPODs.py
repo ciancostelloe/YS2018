@@ -45,7 +45,7 @@ for i in range (0,4):
     if len(switchState) > 4:
         #print(switchState);
         array = list(str(switchState))
-        #print(array)
+        print(array)
         for x, val in enumerate(array):
             if array[x] == 'T':
                 print('Switch', (x - 5), 'is Low')
