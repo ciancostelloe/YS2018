@@ -4,6 +4,7 @@ import serial
 import time
 import random
 import threading
+import sys
 
 
 
@@ -106,7 +107,11 @@ def redNumGen2():
 ################################States#########################################
 
 def nextState():
-    if switchValues[greenSec] == 'F':
+    t1 = time.time()
+    if t1 - t0 > 30:
+        print("Game Over")
+        sys.exit()
+    elif switchValues[greenSec] == 'F':
         score = score + 1
         mainGame()
     elif switchValues[redSec1] == 'F':
@@ -116,8 +121,10 @@ def nextState():
         score = score - 1
         mainGame()
     else:
-        print("Waiting for green")
-        time.sleep(0.1)
+        currTime = (t1 - t0)
+        currTime = (30 - int(currTime))
+        print("Time = ", currTime)
+        time.sleep(0.5)
         nextState()
         
 
@@ -125,15 +132,16 @@ def nextState():
 global score
 score = 0
 
+
 def mainGame():
 
-    t0 = time.time()
     while True:
-        time.sleep(0.1)
-
         t1 = time.time()
         if t1 - t0 < 30:
             print("Game on")
+            currTime = (t1 - t0)
+            currTime = (30 - int(currTime))
+            print("Time = ", currTime)
             greenNumGen()
             time.sleep(0.1)
             redNumGen1()
@@ -175,17 +183,14 @@ def mainGame():
             else:
                 print("Score = 0")
 
-            arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
-
-            currTime = (t1 - t0)
-            currTime = (30 - int(currTime))
-            print("Time = ", currTime)
-            
-            
+            arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())    
         else:
             print("Game Over")
             break
 
+
+global t0
+t0 = time.time()
 
 mainGame()
 
