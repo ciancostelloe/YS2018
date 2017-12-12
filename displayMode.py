@@ -38,10 +38,10 @@ def randomDisp():
         while True:
             for colourCount, val in enumerate(colourList):
                 bright = 8
-                for x in range (0, 7):
+                for x in range (1, 9):
                     arduinoSerialData.write('SET_BRIGHTNESS:%d\r'.encode() % bright)
                     arduinoSerialData.write('SET_COLOUR:%d:%d\r'.encode() % (x, val))
-                    time.sleep(1)
+                    time.sleep(0.5)
                     bright = bright + 31
     except KeyboardInterrupt:
         print("Interrupt")

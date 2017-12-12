@@ -7,7 +7,6 @@ import threading
 import sys
 
 
-
 print('Initialising connection\n');
 
 arduinoSerialData = serial.Serial(
@@ -59,15 +58,15 @@ def trafficLight():
 
 ##Green
 def greenNumGen():
-    global  greenSec
-    greenSec = random.randint(0, 7)
+    global greenSec
+    greenSec = random.randint(1, 8)
     print(greenSec)
 
 
 ##2xRed
 def redNumGen1():
     global redSec1
-    redSec1 = random.randint(0, 7)
+    redSec1 = random.randint(1, 8)
     print(redSec1)
     if redSec1 == greenSec:
         print("Same Numbers: ", greenSec, redSec1)
@@ -75,8 +74,8 @@ def redNumGen1():
 
 def redNumGen2():
     global redSec2
-    redSec2 = random.randint(0, 7)
-    print(redSec2, "\n")
+    redSec2 = random.randint(1, 8)
+    print(redSec2)
     if (redSec2 == redSec1):
         print("Same reds: ",greenSec, redSec1, redSec2)
         redNumGen2()
@@ -107,89 +106,93 @@ def redNumGen2():
 ################################States#########################################
 
 def nextState():
-    t1 = time.time()
-    if t1 - t0 > 30:
-        print("Game Over")
-        sys.exit()
-    elif switchValues[greenSec] == 'F':
-        score = score + 1
-        mainGame()
-    elif switchValues[redSec1] == 'F':
-        score = score - 1
-        mainGame()
-    elif switchValues[redSec2] == 'F':
-        score = score - 1
-        mainGame()
-    else:
-        currTime = (t1 - t0)
-        currTime = (30 - int(currTime))
-        print("Time = ", currTime)
-        time.sleep(0.5)
-        nextState()
+    global score
+    global switchValues
+    global swithState
+    global array
+    global greenSec
+    global redSec1
+    global redSec2
+
+    while True:
+        switchState = arduinoSerialData.readline()
+        array = list(str(switchState))
+        switchValues = []
+
+        if len(array) > 8:
+            for x, val in enumerate(array):
+                if array[x] == 'T':
+                    switchValues.append(array[x])
+                elif array[x] == 'F':
+                    switchValues.append(array[x])
+            print("Switch values: ", switchValues)
+    
+            if switchValues[greenSec - 1] == 'F':
+                score = score + 1
+                return 0
+            elif switchValues[redSec1 - 1] == 'F':
+                score = score - 1
+                return 0
+            elif switchValues[redSec2 - 1] == 'F':
+                score = score - 1
+                return 0
+            else:
+                print("Hit the green tile!")
+                arduinoSerialData.write('READ_SW\r'.encode())
+                time.sleep(0.1)
+                continue
+        
+##        nextState()
         
 
 ##################################Game#########################################    
-global score
-score = 0
-
 
 def mainGame():
+    global score
+    global switchValues
+    global array
+    global t0
+    global switchState
+    score = 0
 
+    
     while True:
         t1 = time.time()
         if t1 - t0 < 30:
-            print("Game on")
+            print("\nGame on")
             currTime = (t1 - t0)
             currTime = (30 - int(currTime))
             print("Time = ", currTime)
             greenNumGen()
-            time.sleep(0.1)
+            time.sleep(0.01)
             redNumGen1()
-            time.sleep(0.1)
+            time.sleep(0.01)
             redNumGen2()
-            time.sleep(0.1)
+            time.sleep(0.01)
             arduinoSerialData.write('SET_BRIGHTNESS:255\r'.encode())
-            time.sleep(0.1)
+            time.sleep(0.01)
             arduinoSerialData.write('SET_COLOUR:%d:0x0f0\r'.encode() %greenSec)
-            time.sleep(0.1)
+            time.sleep(0.01)
             arduinoSerialData.write('SET_COLOUR:%d:0xf00\r'.encode() %redSec1)
-            time.sleep(0.1)
+            time.sleep(0.01)
             arduinoSerialData.write('SET_COLOUR:%d:0xf00\r'.encode() %redSec2)
+            time.sleep(0.3)
 
-            for i in range (0,8):
-                arduinoSerialData.write('READ_SW\r'.encode())
-                switchState = arduinoSerialData.readline();
-                time.sleep(0.01)
+            arduinoSerialData.write('READ_SW\r'.encode())
 
-                if len(switchState) > 4:
-                    global array
-                    array = list(str(switchState))
-                    global switchValues
-                    switchValues = []
-                    for x, val in enumerate(array):
-                        if array[x] == 'T':
-                            #print('Switch', (x - 5), 'is Low')
-                            switchValues.append(array[x])
-                        elif array[x] == 'F':
-                            #print('Switch ', (x - 5), 'is High')
-                            switchValues.append(array[x])
-                    #print(switchValues, "\n")
-                    nextState()
-##              else:
-##                  print("No array: ", switchState)
-                        
-            if score >= 0:
+            nextState()
+            
+            if score > 0:
                 print("Score = ", score)
             else:
                 print("Score = 0")
-
-            arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())    
+            time.sleep(4)
+            arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
+            time.sleep(1)
         else:
             print("Game Over")
             break
 
-
-global t0
 t0 = time.time()
 
 mainGame()
