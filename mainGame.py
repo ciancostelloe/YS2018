@@ -113,34 +113,53 @@ def nextState():
     global greenSec
     global redSec1
     global redSec2
+    global t1
+    global t0
+
+    testArray = ['T', 'F', 'T', 'F', 'T', 'F', 'T', 'F', 'T']
+    #time.sleep(2)
 
     while True:
-        switchState = arduinoSerialData.readline()
-        array = list(str(switchState))
-        switchValues = []
+        t1 = time.time()
+        if t1 - t0 < 30:
+            currTime = (t1 - t0)
+            currTime = (30 - int(currTime))
+            print("Time = ", currTime)
+            switchState = arduinoSerialData.readline()
+            array = list(str(switchState))
+            switchValues = []
 
-        if len(array) > 8:
-            for x, val in enumerate(array):
-                if array[x] == 'T':
-                    switchValues.append(array[x])
-                elif array[x] == 'F':
-                    switchValues.append(array[x])
-            print("Switch values: ", switchValues)
-    
-            if switchValues[greenSec - 1] == 'F':
-                score = score + 1
-                return 0
-            elif switchValues[redSec1 - 1] == 'F':
-                score = score - 1
-                return 0
-            elif switchValues[redSec2 - 1] == 'F':
-                score = score - 1
-                return 0
-            else:
-                print("Hit the green tile!")
-                arduinoSerialData.write('READ_SW\r'.encode())
-                time.sleep(0.1)
-                continue
+            if len(array) > 8:
+                for x, val in enumerate(array):
+                    if array[x] == 'T':
+                        switchValues.append(array[x])
+                    elif array[x] == 'F':
+                        switchValues.append(array[x])
+                print("Switch values: ", switchValues)
+        
+                if testArray[greenSec - 1] == 'F':
+                    score = score + 1
+                    return 0
+                elif testArray[redSec1 - 1] == 'F':
+                    if score == 0:
+                        return 0
+                    else:
+                        score = score - 1
+                        return 0
+                elif testArray[redSec2 - 1] == 'F':
+                    if score == 0:
+                        return 0
+                    else:
+                        score = score - 1
+                    return 0
+                else:
+                    print("Hit the green tile!")
+                    arduinoSerialData.write('READ_SW\r'.encode())
+                    time.sleep(0.1)
+                    continue
+        else:
+            print("Game Over")
+            sys.exit()
         
 ##        nextState()
         
@@ -152,6 +171,7 @@ def mainGame():
     global switchValues
     global array
     global t0
+    global t1
     global switchState
     score = 0
 
@@ -186,9 +206,9 @@ def mainGame():
                 print("Score = ", score)
             else:
                 print("Score = 0")
-            time.sleep(4)
+            #time.sleep(4)
             arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
-            time.sleep(1)
+            time.sleep(0.1)
         else:
             print("Game Over")
             break
