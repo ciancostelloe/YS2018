@@ -6,6 +6,11 @@ import random
 import threading
 import sys
 
+global score1
+score1 = 0
+global score2
+score2 = 0
+
 
 print('Initialising connection\n');
 
@@ -106,7 +111,8 @@ def redNumGen2():
 ################################States#########################################
 
 def nextState():
-    global score
+    global score1
+    global score2
     global switchValues
     global swithState
     global array
@@ -137,20 +143,20 @@ def nextState():
                         switchValues.append(array[x])
                 print("Switch values: ", switchValues)
         
-                if testArray[greenSec - 1] == 'F':
-                    score = score + 1
+                if switchValues[greenSec - 1] == 'F':
+                    score1 = score1 + 1
                     return 0
-                elif testArray[redSec1 - 1] == 'F':
-                    if score == 0:
+                elif switchValues[redSec1 - 1] == 'F':
+                    if score1 == 0:
                         return 0
                     else:
-                        score = score - 1
+                        score1 = score1 - 1
                         return 0
-                elif testArray[redSec2 - 1] == 'F':
-                    if score == 0:
+                elif switchValues[redSec2 - 1] == 'F':
+                    if score1 == 0:
                         return 0
                     else:
-                        score = score - 1
+                        score1 = score1 - 1
                     return 0
                 else:
                     print("Hit the green tile!")
@@ -159,6 +165,19 @@ def nextState():
                     continue
         else:
             print("Game Over")
+            if score1 > score2:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            elif score1 == score2:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            else:
+                arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
+
+            if score2 > score1:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            elif score2 == score1:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            else:
+                arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
             sys.exit()
         
 ##        nextState()
@@ -167,7 +186,8 @@ def nextState():
 ##################################Game#########################################    
 
 def mainGame():
-    global score
+    global score1
+    global score2
     global switchValues
     global array
     global t0
@@ -202,7 +222,7 @@ def mainGame():
 
             nextState()
             
-            if score > 0:
+            if score1 > 0:
                 print("Score = ", score)
             else:
                 print("Score = 0")
@@ -211,6 +231,19 @@ def mainGame():
             time.sleep(0.1)
         else:
             print("Game Over")
+            if score1 > score2:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            elif score1 == score2:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            else:
+                arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
+
+            if score2 > score1:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            elif score2 == score1:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            else:
+                arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
             break
 
 t0 = time.time()
