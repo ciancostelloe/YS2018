@@ -14,6 +14,7 @@ score2 = 0
 
 print('Initialising connection\n');
 
+##USB1
 arduinoSerialData = serial.Serial(
   
    port='/dev/ttyUSB0',
@@ -23,9 +24,21 @@ arduinoSerialData = serial.Serial(
    bytesize=serial.EIGHTBITS,
    timeout=1
    )
+
+##USB2
+##arduinoSerialData2 = serial.Serial(
+##  
+##   port='/dev/ttyUSB1',
+##   baudrate = 115200,
+##   parity=serial.PARITY_NONE,
+##   stopbits=serial.STOPBITS_ONE,
+##   bytesize=serial.EIGHTBITS,
+##   timeout=1
+##   )
    
 time.sleep(5)
 print('Port opened successfully\n')
+
 
 ####################Define Colours############################
 red = 0xf00;
@@ -89,11 +102,6 @@ def redNumGen2():
         redNumGen2()
         
 
-#greenNumGen()
-#redNumGen1()
-#redNumGen2()
-#print("Final values = ", greenSec, redSec1, redSec2)
-
 
 ###############################30 second timer###################################
 
@@ -131,6 +139,8 @@ def nextState():
             currTime = (t1 - t0)
             currTime = (30 - int(currTime))
             print("Time = ", currTime)
+
+            
             switchState = arduinoSerialData.readline()
             array = list(str(switchState))
             switchValues = []
@@ -178,6 +188,7 @@ def nextState():
                 arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
             else:
                 arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
+            time.sleep(2)
             sys.exit()
         
 ##        nextState()
