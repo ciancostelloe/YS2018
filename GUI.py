@@ -2,7 +2,20 @@ from tkinter import *
 import os
 import time
 import random
+import sys
 
+
+
+########################Definitions############################
+def stopGame():
+    print("Game Ended")
+    sys.exit()
+
+def startGame():
+    print("Game started")
+
+    
+#########################Frame##################################
 root = Tk()
 ADI = '#1E4056'
 fr = Frame(root, bg = ADI, width = 800, height = 600)
@@ -11,9 +24,9 @@ fr.grid(row = 0, column = 0)
 fr.grid_propagate(0)
 fr.update()
 
+#########################Load images###########################
 imageArray = ["1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png"]
 logoArray = [PhotoImage(file= imageArray[0]), PhotoImage(file= imageArray[1]), PhotoImage(file= imageArray[2]), PhotoImage(file= imageArray[3]), PhotoImage(file= imageArray[4]), PhotoImage(file= imageArray[5]), PhotoImage(file= imageArray[6]), PhotoImage(file= imageArray[7])]
-
 
 
 randy = random.randint(0, 7)
@@ -23,6 +36,7 @@ logo2 = logoArray[randy]
 w2 = Label(root, image=logo2).place(x = 600, y = 400, anchor = "center")
 
 
+#####################Create and set labels##################
 var = StringVar()
 var.set('Player 1')
 l = Entry(fr, textvariable = var, bg = "white", font=("Courier", 22))
@@ -47,12 +61,18 @@ podScore1.set('0')
 scoreLabel1 = Label(fr, textvariable = podScore1, bg = "white", font=("Helvetica", 26))
 scoreLabel1.place(x = 25, y = 115, anchor = "w")
 
-
 timeVar = StringVar()
 x = 30
 timeVar.set(x)
 l6 = Label(fr, textvariable = timeVar, bg = "white", font=("Helvetica", 18))
 l6.place(x = 395, y = 120, anchor = "center")
+
+startButton = Button(fr, bg = ADI, fg = "white", text ="Start", command = startGame)
+startButton.place(x = 365, y = 170, anchor = "center")
+
+stopButton = Button(fr, bg = ADI, fg = "white", text ="Stop", command = stopGame)
+stopButton.place(x = 425, y = 170, anchor = "center")
+
 
 var5 = StringVar()
 var5.set('Score')
@@ -67,6 +87,11 @@ time.sleep(1)
 root.update()
 
 
+root.mainloop()
+
+##############################################################################################
+##########################################Main################################################
+##############################################################################################
 
 
 
@@ -76,4 +101,36 @@ root.update()
 
 
 
-root.mainloop() # the window is now displayed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
