@@ -1,18 +1,26 @@
+
+
+#######################Imports###############################
 from tkinter import *
 import os
 import time
 import random
 import sys
+import serial
+import threading
 
+
+#####################Globals###############################
+global score1
+score1 = 0
+global score2
+score2 = 0
 
 
 ########################Definitions############################
 def stopGame():
     print("Game Ended")
     sys.exit()
-
-def startGame():
-    print("Game started")
 
     
 #########################Frame##################################
@@ -29,6 +37,333 @@ imageArray = ["1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.
 logoArray = [PhotoImage(file= imageArray[0]), PhotoImage(file= imageArray[1]), PhotoImage(file= imageArray[2]), PhotoImage(file= imageArray[3]), PhotoImage(file= imageArray[4]), PhotoImage(file= imageArray[5]), PhotoImage(file= imageArray[6]), PhotoImage(file= imageArray[7])]
 
 
+
+##############################################################################################
+##########################################Main################################################
+##############################################################################################
+
+def startGame():
+    global score1
+    global score2
+    global switchValues
+    global swithState
+    global array
+    global greenSec
+    global redSec1
+    global redSec2
+    global t1
+    global t0
+    global arduinoSerialData
+    global arduinoSerialData2
+    print("Game started")
+    print('Initialising connection\n');
+
+    ##USB1
+    arduinoSerialData = serial.Serial(
+       port='/dev/ttyUSB0',
+       baudrate = 115200,
+       parity=serial.PARITY_NONE,
+       stopbits=serial.STOPBITS_ONE,
+       bytesize=serial.EIGHTBITS,
+       timeout=1
+       )
+
+##    ##USB2
+##    arduinoSerialData2 = serial.Serial(
+##       port='/dev/ttyUSB1',
+##       baudrate = 115200,
+##       parity=serial.PARITY_NONE,
+##       stopbits=serial.STOPBITS_ONE,
+##       bytesize=serial.EIGHTBITS,
+##       timeout=1
+##       )
+    
+    time.sleep(5)
+    print('Ports opened successfully\n')
+
+
+    ####################Define Colours############################
+    red = 0xf00;
+    green = 0x0f0;
+    blue = 0x00f;
+    lightBlue = 0x0ff;
+    yellow = 0xff0;
+    purple = 0xf0f;
+    colourList = [red, yellow, green, lightBlue, blue, purple]
+
+    t0 = time.time()
+    mainGame()
+
+##    ####################3 - 2 - 1#################################
+##def trafficLight():
+##    
+##    arduinoSerialData.write('SET_BRIGHTNESS:255\r'.encode())
+##    arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
+##    time.sleep(1.2)
+##    arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
+##    time.sleep(0.5)
+##
+##    arduinoSerialData.write('SET_BRIGHTNESS:255\r'.encode())
+##    arduinoSerialData.write('SET_COLOUR:9:0xff0\r'.encode())
+##    time.sleep(1)
+##    arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
+##    time.sleep(0.4)
+##    
+##    arduinoSerialData.write('SET_BRIGHTNESS:255\r'.encode())
+##    arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+##    time.sleep(0.8)
+##    arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
+##    time.sleep(0.1)
+##
+###trafficLight()
+
+#####################Random Generator POD 1#######################################
+
+##Green
+def greenNumGen():
+    global greenSec
+    greenSec = random.randint(1, 8)
+    print(greenSec)
+
+
+##2xRed
+def redNumGen1():
+    global redSec1
+    redSec1 = random.randint(1, 8)
+    print(redSec1)
+    if redSec1 == greenSec:
+        print("Same Numbers: ", greenSec, redSec1)
+        redNumGen1()
+
+def redNumGen2():
+    global redSec2
+    redSec2 = random.randint(1, 8)
+    print(redSec2)
+    if (redSec2 == redSec1):
+        print("Same reds: ",greenSec, redSec1, redSec2)
+        redNumGen2()
+    elif (redSec2 == greenSec):
+        print("Same as green: ", greenSec, redSec1, redSec2)
+        redNumGen2()
+
+#####################Random Generator POD 2#######################################
+
+####Green
+##def greenNumGenP2():
+##    global greenSecP2
+##    greenSecP2 = random.randint(1, 8)
+##    print(greenSecP2)
+##
+##
+####2xRed
+##def redNumGen1P2():
+##    global redSec1P2
+##    redSec1P2 = random.randint(1, 8)
+##    print(redSec1P2)
+##    if redSec1P2 == greenSecP2:
+##        print("Same Numbers: ", greenSecP2, redNumGen1P2)
+##        redNumGen1P2()
+##
+##def redNumGen2P2():
+##    global redSec2P2
+##    redSec2P2 = random.randint(1, 8)
+##    print(redSec2P2)
+##    if (redSec2P2 == redSec1):
+##        print("Same reds: ",greenSecP2, redSec1P2, redSec2P2)
+##        redNumGen2P2()
+##    elif (redSec2 == greenSec):
+##        print("Same as green: ", greenSecP2, redSec1P2, redSec2)
+##        redNumGen2P2()
+
+################################States#########################################
+
+def nextState():
+    global score1
+    global score2
+    global switchValues
+    global switchValues2
+    global swithState
+    global switchState2
+    global array
+    global array2
+    global greenSec
+    global redSec1
+    global redSec2
+    global greenSecP2
+    global redSec1P2
+    global redSec2P2
+    global arduinoSerialData
+    global arduinoSerialData2
+    global t1
+    global t0
+
+    testArray = ['T', 'F', 'T', 'F', 'T', 'F', 'T', 'F', 'T']
+    #time.sleep(2)
+
+    while True:
+        t1 = time.time()
+        if t1 - t0 < 30:
+            currTime = (t1 - t0)
+            currTime = (30 - int(currTime))
+            print("Time = ", currTime)
+
+            
+            switchState = arduinoSerialData.readline()
+            array = list(str(switchState))
+            switchValues = []
+
+##            switchState2 = arduinoSerialData2.readline()
+##            array2 = list(str(switchState2))
+##            switchValues2 = []
+
+            if len(array) > 8:
+                for x, val in enumerate(array):
+                    if array[x] == 'T':
+                        switchValues.append(array[x])
+                    elif array[x] == 'F':
+                        switchValues.append(array[x])
+                print("Switch values: ", switchValues)
+        
+                if switchValues[greenSec - 1] == 'F':
+                    score1 = score1 + 1
+                    return 0
+                elif switchValues[redSec1 - 1] == 'F':
+                    if score1 == 0:
+                        return 0
+                    else:
+                        score1 = score1 - 1
+                        return 0
+                elif switchValues[redSec2 - 1] == 'F':
+                    if score1 == 0:
+                        return 0
+                    else:
+                        score1 = score1 - 1
+                    return 0
+            else:
+                print("Hit the green tile!")
+                arduinoSerialData.write('READ_SW\r'.encode())
+                time.sleep(0.1)
+                continue
+
+                
+
+##            if len(array2) > 8:
+##                for x, val in enumerate(array2):
+##                    if array2[x] == 'T':
+##                        switchValues2.append(array2[x])
+##                    elif array2[x] == 'F':
+##                        switchValues2.append(array2[x])
+##                print("Switch values: ", switchValues2)
+##        
+##                if switchValues2[greenSecP2 - 1] == 'F':
+##                    score2 = score2 + 1
+##                    return 0
+##                elif switchValues2[redSec1P2 - 1] == 'F':
+##                    if score2 == 0:
+##                        return 0
+##                    else:
+##                        score2 = score2 - 1
+##                        return 0
+##                elif switchValues2[redSec2P2 - 1] == 'F':
+##                    if score2 == 0:
+##                        return 0
+##                    else:
+##                        score2 = score2 - 1
+##                    return 0
+##                else:
+##                    print("Hit the green tile!")
+##                    arduinoSerialData2.write('READ_SW\r'.encode())
+##                    time.sleep(0.1)
+##                    continue
+
+        else:
+            print("Game Over")
+            if score1 > score2:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            elif score1 == score2:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            else:
+                arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
+
+            if score2 > score1:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            elif score2 == score1:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            else:
+                arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
+            time.sleep(2)
+            arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
+            sys.exit()
+        
+##        nextState()
+
+##################################Game#########################################    
+
+def mainGame():
+    global score1
+    global score2
+    global switchValues
+    global array
+    global t0
+    global t1
+    global switchState
+    arduinoSerialData
+    score = 0
+
+    
+    while True:
+        t1 = time.time()
+        root.after(1000, stopGame)
+        if t1 - t0 < 30:
+            print("\nGame on")
+            currTime = (t1 - t0)
+            currTime = (30 - int(currTime))
+            print("Time = ", currTime)
+            greenNumGen()
+            time.sleep(0.01)
+            redNumGen1()
+            time.sleep(0.01)
+            redNumGen2()
+            time.sleep(0.01)
+            arduinoSerialData.write('SET_BRIGHTNESS:255\r'.encode())
+            time.sleep(0.01)
+            arduinoSerialData.write('SET_COLOUR:%d:0x0f0\r'.encode() %greenSec)
+            time.sleep(0.01)
+            arduinoSerialData.write('SET_COLOUR:%d:0xf00\r'.encode() %redSec1)
+            time.sleep(0.01)
+            arduinoSerialData.write('SET_COLOUR:%d:0xf00\r'.encode() %redSec2)
+            time.sleep(0.3)
+
+            arduinoSerialData.write('READ_SW\r'.encode())
+
+            nextState()
+            
+            if score1 > 0:
+                print("Score = ", score)
+            else:
+                print("Score = 0")
+            #time.sleep(4)
+            arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
+            time.sleep(0.1)
+        else:
+            print("Game Over")
+            if score1 > score2:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            elif score1 == score2:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            else:
+                arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
+
+            if score2 > score1:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            elif score2 == score1:
+                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+            else:
+                arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
+            break
+        
+
+
 randy = random.randint(0, 7)
 logo1 = logoArray[randy]
 w1 = Label(root, image=logo1).place(x = 200, y = 400, anchor = "center")
@@ -36,7 +371,7 @@ logo2 = logoArray[randy]
 w2 = Label(root, image=logo2).place(x = 600, y = 400, anchor = "center")
 
 
-#####################Create and set labels##################
+#####################Create and set labels###############################
 var = StringVar()
 var.set('Player 1')
 l = Entry(fr, textvariable = var, bg = "white", font=("Courier", 22))
@@ -89,9 +424,39 @@ root.update()
 
 root.mainloop()
 
-##############################################################################################
-##########################################Main################################################
-##############################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

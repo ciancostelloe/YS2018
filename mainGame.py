@@ -35,8 +35,8 @@ arduinoSerialData = serial.Serial(
 ##   bytesize=serial.EIGHTBITS,
 ##   timeout=1
 ##   )
-   
-time.sleep(5)
+time.sleep(10)
+arduinoSerialData.flushInput()
 print('Port opened successfully\n')
 
 
@@ -133,12 +133,13 @@ def nextState():
     testArray = ['T', 'F', 'T', 'F', 'T', 'F', 'T', 'F', 'T']
     #time.sleep(2)
 
+    
     while True:
         t1 = time.time()
         if t1 - t0 < 30:
             currTime = (t1 - t0)
             currTime = (30 - int(currTime))
-            print("Time = ", currTime)
+            print("Time2 = ", currTime)
 
             
             switchState = arduinoSerialData.readline()
@@ -148,21 +149,21 @@ def nextState():
             if len(array) > 8:
                 for x, val in enumerate(array):
                     if array[x] == 'T':
-                        switchValues.append(array[x])
+                        switchValues.insert(0, array[x])
                     elif array[x] == 'F':
-                        switchValues.append(array[x])
+                        switchValues.insert(0, array[x])
                 print("Switch values: ", switchValues)
         
-                if switchValues[greenSec - 1] == 'F':
+                if switchValues[greenSec] == 'F':
                     score1 = score1 + 1
                     return 0
-                elif switchValues[redSec1 - 1] == 'F':
+                elif switchValues[redSec1] == 'F':
                     if score1 == 0:
                         return 0
                     else:
                         score1 = score1 - 1
                         return 0
-                elif switchValues[redSec2 - 1] == 'F':
+                elif switchValues[redSec2] == 'F':
                     if score1 == 0:
                         return 0
                     else:
@@ -173,6 +174,8 @@ def nextState():
                     arduinoSerialData.write('READ_SW\r'.encode())
                     time.sleep(0.1)
                     continue
+
+
         else:
             print("Game Over")
             if score1 > score2:
@@ -213,7 +216,7 @@ def mainGame():
             print("\nGame on")
             currTime = (t1 - t0)
             currTime = (30 - int(currTime))
-            print("Time = ", currTime)
+            print("Time1 = ", currTime)
             greenNumGen()
             time.sleep(0.01)
             redNumGen1()
@@ -227,34 +230,47 @@ def mainGame():
             arduinoSerialData.write('SET_COLOUR:%d:0xf00\r'.encode() %redSec1)
             time.sleep(0.01)
             arduinoSerialData.write('SET_COLOUR:%d:0xf00\r'.encode() %redSec2)
-            time.sleep(0.3)
+            time.sleep(0.25)
 
             arduinoSerialData.write('READ_SW\r'.encode())
-
+            time.sleep(0.01)
             nextState()
             
             if score1 > 0:
-                print("Score = ", score)
+                print("Score = ", score1)
             else:
                 print("Score = 0")
             #time.sleep(4)
             arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
-            time.sleep(0.1)
+
+            time.sleep(0.01)
         else:
             print("Game Over")
             if score1 > score2:
                 arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+                dummyRead = arduinoSerialData.readline()
+
             elif score1 == score2:
                 arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+                dummyRead = arduinoSerialData.readline()
+
             else:
                 arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
+                dummyRead = arduinoSerialData.readline()
+
 
             if score2 > score1:
                 arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+                dummyRead = arduinoSerialData.readline()
+
             elif score2 == score1:
                 arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
+                dummyRead = arduinoSerialData.readline()
+
             else:
                 arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
+                dummyRead = arduinoSerialData.readline()
+
             break
 
 t0 = time.time()
