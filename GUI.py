@@ -7,13 +7,27 @@ import sys
 import serial
 import threading
 
+##########################Stats##############################
+##statsFile = open("stats.txt", "w")
+##statsFile.write("Count: 0")
+##statsFile.close()
+
+statsFile = open("stats.txt", "r")
+stats = statsFile.readline().replace('Count:', ' ')
+
+stats = int(stats) + 1
+print(stats)
+
+statsFile = open("stats.txt", "w")
+statsFile.write("Count: %d" %stats)
+
 
 #####################Globals###############################
 global score1
 global score2
 global lastGreen
 global lastRed
-global lasrRed2
+global lastRed2
 global lastGreenP2
 global lastRedP2
 global lastRed2P2
@@ -22,10 +36,11 @@ score1 = 0
 score2 = 0
 lastGreen = 0
 lastRed = 0
-lasrRed2 = 0
+lastRed2 = 0
 lastGreenP2 = 0
 lastRedP2 = 0
 lastRed2P2 = 0
+
 
 ########################Definitions############################
 def stopGame():
@@ -42,10 +57,14 @@ fr.grid(row = 0, column = 0)
 fr.grid_propagate(0)
 fr.update()
 
+gameCount = StringVar()
+gameCount.set('Games played: %d' %stats)
+countBox = Label(fr, textvariable = gameCount,fg = "white", bg = ADI, font=("Courier", 12))
+countBox.place(x = 10, y = 580, anchor = "w")
+
 #########################Load images###########################
 imageArray = ["1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png", "8.png"]
 logoArray = [PhotoImage(file= imageArray[0]), PhotoImage(file= imageArray[1]), PhotoImage(file= imageArray[2]), PhotoImage(file= imageArray[3]), PhotoImage(file= imageArray[4]), PhotoImage(file= imageArray[5]), PhotoImage(file= imageArray[6]), PhotoImage(file= imageArray[7])]
-
 
 
 ##############################################################################################
@@ -134,6 +153,7 @@ def redNumGen1():
 
 def redNumGen2():
     global redSec2
+    global lastRed2
     redSec2 = random.randint(1, 8)
     print(redSec2)
     if (redSec2 == redSec1):
@@ -142,6 +162,10 @@ def redNumGen2():
     elif (redSec2 == greenSec):
         print("Same as green: ", greenSec, redSec1, redSec2)
         redNumGen2()
+    elif redSec2 == lastRed2:
+        redNumGen2()
+    lastRed2 = redSec2
+
 
 #####################Random Generator POD 2#######################################
 
@@ -149,7 +173,6 @@ def redNumGen2():
 def greenNumGenP2():
     global greenSecP2
     global lastGreenP2
-    lastGreenP2 = 0
     greenSecP2 = random.randint(1, 8)
     print(greenSecP2)
     if greenSecP2 == lastGreenP2:
@@ -160,22 +183,31 @@ def greenNumGenP2():
 ##2xRed
 def redNumGen1P2():
     global redSec1P2
+    global lastRedP2
     redSec1P2 = random.randint(1, 8)
     print(redSec1P2)
     if redSec1P2 == greenSecP2:
         print("Same Numbers: ", greenSecP2, redNumGen1P2)
         redNumGen1P2()
+    elif redSec1P2 == lastRedP2:
+        redNumGen()
+    lastRedP2 = redSec1P2
 
 def redNumGen2P2():
     global redSec2P2
+    global lastRed2P2
     redSec2P2 = random.randint(1, 8)
     print(redSec2P2)
-    if (redSec2P2 == redSec1):
+    if (redSec2P2 == redSec1P2):
         print("Same reds: ",greenSecP2, redSec1P2, redSec2P2)
         redNumGen2P2()
-    elif (redSec2 == greenSec):
+    elif (redSec2P2 == greenSecP2):
         print("Same as green: ", greenSecP2, redSec1P2, redSec2)
         redNumGen2P2()
+    elif redSec2P2 == lastRed2P2:
+        redNumGen2P2()
+    lastRed2P2 = redSec2P2
+    
 
 ################################States#########################################
 
@@ -295,6 +327,11 @@ def nextState():
 ##            root.update()
 
         else:
+            name1 = l.get()
+            name2 = l2.get()
+            statsFile.write("\n%s %s" %(name1, score1))
+            statsFile.write("\n%s %s" %(name2, score2))
+            statsFile.close()
             print("Game Over")
             if score1 > score2:
                 arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
@@ -396,14 +433,14 @@ w2 = Label(root, image=logo2).place(x = 600, y = 400, anchor = "center")
 
 
 #####################Create and set labels###############################
-var = StringVar()
-var.set('Player 1')
-l = Entry(fr, textvariable = var, bg = "white", font=("Courier", 22))
+player1Name = StringVar()
+player1Name.set('Player 1')
+l = Entry(fr, textvariable = player1Name, bg = "white", font=("Courier", 22))
 l.place(x = 25, y = 25, anchor = "w")
 
-var2 = StringVar()
-var2.set('Player 2')
-l2 = Entry(fr, textvariable = var2, bg = "white", font=("Courier", 22))
+player2Name = StringVar()
+player2Name.set('Player 2')
+l2 = Entry(fr, textvariable = player2Name, bg = "white", font=("Courier", 22))
 l2.place(x = 775, y = 25, anchor = "e")
 
 var3 = StringVar()
@@ -411,9 +448,9 @@ var3.set('Time')
 l3 = Label(fr, textvariable = var3, bg = "white", font=("Courier", 22))
 l3.place(x = 395, y = 80, anchor = "center")
 
-var4 = StringVar()
-var4.set('Score')
-l4 = Label(fr, textvariable = var4, bg = "white", font=("Courier", 18))
+score1Var = StringVar()
+score1Var.set('Score')
+l4 = Label(fr, textvariable = score1Var, bg = "white", font=("Courier", 18))
 l4.place(x = 25, y = 75, anchor = "w")
 
 ##podScore1 = StringVar()
@@ -434,19 +471,18 @@ stopButton = Button(fr, bg = ADI, fg = "white", text ="Stop", command = stopGame
 stopButton.place(x = 425, y = 170, anchor = "center")
 
 
-var5 = StringVar()
-var5.set('Score')
-l5 = Label(fr, textvariable = var5, bg = "white", font=("Courier", 18))
+score2Var = StringVar()
+score2Var.set('Score')
+l5 = Label(fr, textvariable = score2Var, bg = "white", font=("Courier", 18))
 l5.place(x = 775, y = 75, anchor = "e")
+
 
 ##podScore2 = StringVar()
 ##podScore2.set('0')
 ##scoreLabel2 = Label(fr, textvariable = podScore2, bg = "white", font=("Helvetica", 26))
 ##scoreLabel2.place(x = 775, y = 115, anchor = "e")
 
-time.sleep(1)
 root.update()
-
 
 root.mainloop()
 
