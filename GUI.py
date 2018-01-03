@@ -1,5 +1,3 @@
-
-
 #######################Imports###############################
 from tkinter import *
 import os
@@ -12,10 +10,22 @@ import threading
 
 #####################Globals###############################
 global score1
-score1 = 0
 global score2
-score2 = 0
+global lastGreen
+global lastRed
+global lasrRed2
+global lastGreenP2
+global lastRedP2
+global lastRed2P2
 
+score1 = 0
+score2 = 0
+lastGreen = 0
+lastRed = 0
+lasrRed2 = 0
+lastGreenP2 = 0
+lastRedP2 = 0
+lastRed2P2 = 0
 
 ########################Definitions############################
 def stopGame():
@@ -78,7 +88,9 @@ def startGame():
 ##       timeout=1
 ##       )
     
-    time.sleep(5)
+    time.sleep(8)
+    arduinoSerialData.flushInput()
+    #arduinoSerialData2.flushInput()
     print('Ports opened successfully\n')
 
 
@@ -94,46 +106,31 @@ def startGame():
     t0 = time.time()
     mainGame()
 
-##    ####################3 - 2 - 1#################################
-##def trafficLight():
-##    
-##    arduinoSerialData.write('SET_BRIGHTNESS:255\r'.encode())
-##    arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
-##    time.sleep(1.2)
-##    arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
-##    time.sleep(0.5)
-##
-##    arduinoSerialData.write('SET_BRIGHTNESS:255\r'.encode())
-##    arduinoSerialData.write('SET_COLOUR:9:0xff0\r'.encode())
-##    time.sleep(1)
-##    arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
-##    time.sleep(0.4)
-##    
-##    arduinoSerialData.write('SET_BRIGHTNESS:255\r'.encode())
-##    arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
-##    time.sleep(0.8)
-##    arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
-##    time.sleep(0.1)
-##
-###trafficLight()
-
 #####################Random Generator POD 1#######################################
 
 ##Green
 def greenNumGen():
     global greenSec
+    global lastGreen
     greenSec = random.randint(1, 8)
     print(greenSec)
+    if greenSec == lastGreen:
+        greenNumGen()
+    lastGreen = greenSec
 
 
 ##2xRed
 def redNumGen1():
     global redSec1
+    global lastRed
     redSec1 = random.randint(1, 8)
     print(redSec1)
     if redSec1 == greenSec:
         print("Same Numbers: ", greenSec, redSec1)
         redNumGen1()
+    elif redSec1 == lastRed:
+        redNumGen1()
+    lastRed = redSec1
 
 def redNumGen2():
     global redSec2
@@ -148,32 +145,37 @@ def redNumGen2():
 
 #####################Random Generator POD 2#######################################
 
-####Green
-##def greenNumGenP2():
-##    global greenSecP2
-##    greenSecP2 = random.randint(1, 8)
-##    print(greenSecP2)
-##
-##
-####2xRed
-##def redNumGen1P2():
-##    global redSec1P2
-##    redSec1P2 = random.randint(1, 8)
-##    print(redSec1P2)
-##    if redSec1P2 == greenSecP2:
-##        print("Same Numbers: ", greenSecP2, redNumGen1P2)
-##        redNumGen1P2()
-##
-##def redNumGen2P2():
-##    global redSec2P2
-##    redSec2P2 = random.randint(1, 8)
-##    print(redSec2P2)
-##    if (redSec2P2 == redSec1):
-##        print("Same reds: ",greenSecP2, redSec1P2, redSec2P2)
-##        redNumGen2P2()
-##    elif (redSec2 == greenSec):
-##        print("Same as green: ", greenSecP2, redSec1P2, redSec2)
-##        redNumGen2P2()
+##Green
+def greenNumGenP2():
+    global greenSecP2
+    global lastGreenP2
+    lastGreenP2 = 0
+    greenSecP2 = random.randint(1, 8)
+    print(greenSecP2)
+    if greenSecP2 == lastGreenP2:
+        greenNumGenP2()
+    lastGreenP2 = greenSecP2
+
+
+##2xRed
+def redNumGen1P2():
+    global redSec1P2
+    redSec1P2 = random.randint(1, 8)
+    print(redSec1P2)
+    if redSec1P2 == greenSecP2:
+        print("Same Numbers: ", greenSecP2, redNumGen1P2)
+        redNumGen1P2()
+
+def redNumGen2P2():
+    global redSec2P2
+    redSec2P2 = random.randint(1, 8)
+    print(redSec2P2)
+    if (redSec2P2 == redSec1):
+        print("Same reds: ",greenSecP2, redSec1P2, redSec2P2)
+        redNumGen2P2()
+    elif (redSec2 == greenSec):
+        print("Same as green: ", greenSecP2, redSec1P2, redSec2)
+        redNumGen2P2()
 
 ################################States#########################################
 
@@ -196,8 +198,9 @@ def nextState():
     global arduinoSerialData2
     global t1
     global t0
+    global podScore1
 
-    testArray = ['T', 'F', 'T', 'F', 'T', 'F', 'T', 'F', 'T']
+    #testArray = ['T', 'F', 'T', 'F', 'T', 'F', 'T', 'F', 'T']
     #time.sleep(2)
 
     while True:
@@ -206,8 +209,12 @@ def nextState():
             currTime = (t1 - t0)
             currTime = (30 - int(currTime))
             print("Time = ", currTime)
-
             
+            timeVar = StringVar()
+            timeVar.set(currTime)
+            l6 = Label(fr, textvariable = timeVar, bg = "white", font=("Helvetica", 18))
+            l6.place(x = 395, y = 120, anchor = "center")
+
             switchState = arduinoSerialData.readline()
             array = list(str(switchState))
             switchValues = []
@@ -219,34 +226,39 @@ def nextState():
             if len(array) > 8:
                 for x, val in enumerate(array):
                     if array[x] == 'T':
-                        switchValues.append(array[x])
+                        switchValues.insert(0, array[x])
                     elif array[x] == 'F':
-                        switchValues.append(array[x])
+                        switchValues.insert(0, array[x])
                 print("Switch values: ", switchValues)
         
-                if switchValues[greenSec - 1] == 'F':
+                if switchValues[greenSec] == 'F':
                     score1 = score1 + 1
                     return 0
-                elif switchValues[redSec1 - 1] == 'F':
+                elif switchValues[redSec1] == 'F':
                     if score1 == 0:
                         return 0
                     else:
                         score1 = score1 - 1
                         return 0
-                elif switchValues[redSec2 - 1] == 'F':
+                elif switchValues[redSec2] == 'F':
                     if score1 == 0:
                         return 0
                     else:
                         score1 = score1 - 1
                     return 0
-            else:
-                print("Hit the green tile!")
-                arduinoSerialData.write('READ_SW\r'.encode())
-                time.sleep(0.1)
-                continue
+                else:
+                    print("Hit the green tile!")
+                    arduinoSerialData.write('READ_SW\r'.encode())
+                    time.sleep(0.1)
+                    continue
+            
+            podScore1 = StringVar()
+            podScore1.set(score1)
+            scoreLabel1 = Label(fr, textvariable = podScore1, bg = "white", font=("Helvetica", 26))
+            scoreLabel1.place(x = 25, y = 115, anchor = "w")
+            root.update()
 
-                
-
+            
 ##            if len(array2) > 8:
 ##                for x, val in enumerate(array2):
 ##                    if array2[x] == 'T':
@@ -276,6 +288,12 @@ def nextState():
 ##                    time.sleep(0.1)
 ##                    continue
 
+##            podScore2 = StringVar()
+##            podScore2.set(score2)
+##            scoreLabel2 = Label(fr, textvariable = podScore2, bg = "white", font=("Helvetica", 26))
+##            scoreLabel2.place(x = 775, y = 115, anchor = "e")
+##            root.update()
+
         else:
             print("Game Over")
             if score1 > score2:
@@ -295,7 +313,6 @@ def nextState():
             arduinoSerialData.write('SET_COLOUR:9:0x000\r'.encode())
             sys.exit()
         
-##        nextState()
 
 ##################################Game#########################################    
 
@@ -307,24 +324,25 @@ def mainGame():
     global t0
     global t1
     global switchState
-    arduinoSerialData
+    global arduinoSerialData
+    global currTime
+    global podScore1
     score = 0
 
     
     while True:
         t1 = time.time()
-        root.after(1000, stopGame)
         if t1 - t0 < 30:
             print("\nGame on")
             currTime = (t1 - t0)
             currTime = (30 - int(currTime))
             print("Time = ", currTime)
             greenNumGen()
-            time.sleep(0.01)
             redNumGen1()
-            time.sleep(0.01)
             redNumGen2()
-            time.sleep(0.01)
+            greenNumGenP2()
+            redNumGen1P2()
+            redNumGen2P2()            
             arduinoSerialData.write('SET_BRIGHTNESS:255\r'.encode())
             time.sleep(0.01)
             arduinoSerialData.write('SET_COLOUR:%d:0x0f0\r'.encode() %greenSec)
@@ -332,10 +350,16 @@ def mainGame():
             arduinoSerialData.write('SET_COLOUR:%d:0xf00\r'.encode() %redSec1)
             time.sleep(0.01)
             arduinoSerialData.write('SET_COLOUR:%d:0xf00\r'.encode() %redSec2)
-            time.sleep(0.3)
+##            time.sleep(0.01)
+##            arduinoSerialData2.write('SET_COLOUR:%d:0x0f0\r'.encode() %greenSecP2)
+##            time.sleep(0.01)
+##            arduinoSerialData2.write('SET_COLOUR:%d:0xf00\r'.encode() %redSec1P2)
+##            time.sleep(0.01)
+##            arduinoSerialData2.write('SET_COLOUR:%d:0xf00\r'.encode() %redSec2P2)
+            time.sleep(0.25)
 
             arduinoSerialData.write('READ_SW\r'.encode())
-
+            time.sleep(0.01)
             nextState()
             
             if score1 > 0:
@@ -391,16 +415,17 @@ var4 = StringVar()
 var4.set('Score')
 l4 = Label(fr, textvariable = var4, bg = "white", font=("Courier", 18))
 l4.place(x = 25, y = 75, anchor = "w")
-podScore1 = StringVar()
-podScore1.set('0')
-scoreLabel1 = Label(fr, textvariable = podScore1, bg = "white", font=("Helvetica", 26))
-scoreLabel1.place(x = 25, y = 115, anchor = "w")
 
-timeVar = StringVar()
-x = 30
-timeVar.set(x)
-l6 = Label(fr, textvariable = timeVar, bg = "white", font=("Helvetica", 18))
-l6.place(x = 395, y = 120, anchor = "center")
+##podScore1 = StringVar()
+##podScore1.set('0')
+##scoreLabel1 = Label(fr, textvariable = podScore1, bg = "white", font=("Helvetica", 26))
+##scoreLabel1.place(x = 25, y = 115, anchor = "w")
+
+##timeVar = StringVar()
+##currTime = 30
+##timeVar.set(currTime)
+##l6 = Label(fr, textvariable = timeVar, bg = "white", font=("Helvetica", 18))
+##l6.place(x = 395, y = 120, anchor = "center")
 
 startButton = Button(fr, bg = ADI, fg = "white", text ="Start", command = startGame)
 startButton.place(x = 365, y = 170, anchor = "center")
@@ -413,10 +438,11 @@ var5 = StringVar()
 var5.set('Score')
 l5 = Label(fr, textvariable = var5, bg = "white", font=("Courier", 18))
 l5.place(x = 775, y = 75, anchor = "e")
-podScore2 = StringVar()
-podScore2.set('0')
-scoreLabel2 = Label(fr, textvariable = podScore1, bg = "white", font=("Helvetica", 26))
-scoreLabel2.place(x = 775, y = 115, anchor = "e")
+
+##podScore2 = StringVar()
+##podScore2.set('0')
+##scoreLabel2 = Label(fr, textvariable = podScore2, bg = "white", font=("Helvetica", 26))
+##scoreLabel2.place(x = 775, y = 115, anchor = "e")
 
 time.sleep(1)
 root.update()

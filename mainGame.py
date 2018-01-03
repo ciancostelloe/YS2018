@@ -1,5 +1,4 @@
 ###############Main Game ##############################
-
 import serial
 import time
 import random
@@ -35,7 +34,8 @@ arduinoSerialData = serial.Serial(
 ##   bytesize=serial.EIGHTBITS,
 ##   timeout=1
 ##   )
-time.sleep(10)
+
+time.sleep(8)
 arduinoSerialData.flushInput()
 print('Port opened successfully\n')
 
@@ -175,7 +175,6 @@ def nextState():
                     time.sleep(0.1)
                     continue
 
-
         else:
             print("Game Over")
             if score1 > score2:
@@ -185,16 +184,14 @@ def nextState():
             else:
                 arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
 
-            if score2 > score1:
-                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
-            elif score2 == score1:
-                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
-            else:
-                arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
-            time.sleep(2)
+##            if score2 > score1:
+##                arduinoSerialData2.write('SET_COLOUR:9:0x0f0\r'.encode())
+##            elif score2 == score1:
+##                arduinoSerialData2.write('SET_COLOUR:9:0x0f0\r'.encode())
+##            else:
+##                arduinoSerialData2.write('SET_COLOUR:9:0xf00\r'.encode())
+            time.sleep(1)
             sys.exit()
-        
-##        nextState()
         
 
 ##################################Game#########################################    
@@ -248,30 +245,14 @@ def mainGame():
             print("Game Over")
             if score1 > score2:
                 arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
-                dummyRead = arduinoSerialData.readline()
-
-            elif score1 == score2:
+            elif score2 > score1:
                 arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
-                dummyRead = arduinoSerialData.readline()
-
-            else:
-                arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
-                dummyRead = arduinoSerialData.readline()
-
-
-            if score2 > score1:
-                arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
-                dummyRead = arduinoSerialData.readline()
-
             elif score2 == score1:
                 arduinoSerialData.write('SET_COLOUR:9:0x0f0\r'.encode())
-                dummyRead = arduinoSerialData.readline()
-
             else:
                 arduinoSerialData.write('SET_COLOUR:9:0xf00\r'.encode())
-                dummyRead = arduinoSerialData.readline()
-
             break
+
 
 t0 = time.time()
 
