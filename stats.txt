@@ -1,3 +1,0 @@
-Count: 3
-Player 1 0
-Player 2 0
